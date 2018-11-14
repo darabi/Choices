@@ -691,12 +691,12 @@ class Choices {
 
   /**
    * Remove an item from the store by its value
-   * @param  {String} value Value to search for
+   * @param  {Object/String} value Value to search for (compared with ===)
    * @return {Object} Class instance
    * @public
    */
   removeItemsByValue(value) {
-    if (!value || !isType('String', value)) {
+    if (!value) {
       return this;
     }
 
