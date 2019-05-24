@@ -484,6 +484,7 @@ var DEFAULT_CONFIG = {
   },
   callbackOnInit: null,
   callbackOnCreateTemplates: null,
+  callbackOnUnknownChoice: null,
   classNames: DEFAULT_CLASSNAMES
 };
 exports.DEFAULT_CONFIG = DEFAULT_CONFIG;
@@ -2525,13 +2526,13 @@ function () {
     }
   }, {
     key: "_handleChoiceAction",
-    value: function _handleChoiceAction(activeItems, element) {
-      if (!activeItems || !element) {
+    value: function _handleChoiceAction(activeItems, element, idDirectly) {
+      if (!activeItems || !element && !idDirectly) {
         return;
       } // If we are clicking on an option
 
 
-      var id = element.getAttribute('data-id');
+      var id = idDirectly || element.getAttribute('data-id');
 
       var choice = this._store.getChoiceById(id);
 
@@ -2942,6 +2943,8 @@ function () {
           activeItems = _ref4.activeItems,
           hasActiveDropdown = _ref4.hasActiveDropdown;
       var enterKey = _constants.KEY_CODES.ENTER_KEY;
+      var hasShiftKey = event.shiftKey;
+      var callbackOnUnknownChoice = this.config.callbackOnUnknownChoice;
       var targetWasButton = target.hasAttribute('data-button');
 
       if (this._isTextElement && target.value) {
@@ -2971,13 +2974,21 @@ function () {
       if (hasActiveDropdown) {
         var highlightedChoice = this.dropdown.getChild(".".concat(this.config.classNames.highlightedState));
 
-        if (highlightedChoice) {
+        if (hasShiftKey && callbackOnUnknownChoice) {
+          if ((0, _utils.isType)('Function', callbackOnUnknownChoice)) {
+            callbackOnUnknownChoice.call(this, this.input.value, hasShiftKey);
+          }
+        } else if (highlightedChoice) {
           // add enter keyCode value
           if (activeItems[0]) {
             activeItems[0].keyCode = enterKey; // eslint-disable-line no-param-reassign
           }
 
           this._handleChoiceAction(activeItems, highlightedChoice);
+        } else if (callbackOnUnknownChoice) {
+          if ((0, _utils.isType)('Function', callbackOnUnknownChoice)) {
+            callbackOnUnknownChoice.call(this, this.input.value, hasShiftKey);
+          }
         }
 
         event.preventDefault();
